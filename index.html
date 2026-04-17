@@ -3,382 +3,230 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overload Engine</title>
+  <title>Overload Engine — FNF Modding Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg:       #d6e8f5;
-      --bg-dark:  #c4d9ee;
-      --white:    #ffffff;
-      --dark:     #0d1b2e;
-      --cyan:     #29b8e8;
-      --cyan-d:   #1a9fd4;
-      --pink:     #e879a0;
-      --yellow:   #f5d800;
-      --teal:     #3ecfbb;
-      --text:     #111827;
-      --muted:    #4b5563;
-      --border:   #b0c8dc;
+      --bg:#edf4fb;--bg2:#e2eef8;--surface:#ffffff;--dark:#0a1628;--dark2:#132240;
+      --cyan:#0eb8e8;--cyan2:#0a9fd0;--cyan-glow:rgba(14,184,232,0.18);
+      --pink:#f0619a;--pink-soft:rgba(240,97,154,0.12);--yellow:#f5cc00;--teal:#10ceba;
+      --text:#0a1628;--muted:#546380;--muted2:#8898b4;--line:rgba(10,22,40,0.09);
+      --shadow-s:0 2px 8px rgba(10,22,40,0.08);--shadow-m:0 8px 28px rgba(10,22,40,0.10);
+      --shadow-l:0 20px 60px rgba(10,22,40,0.13);--r:10px;
     }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+    .page{display:none}.page.active{display:block;animation:pgIn .35s ease}
+    @keyframes pgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    /* NAV */
+    nav{position:sticky;top:0;z-index:300;background:rgba(255,255,255,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 2.8rem;height:64px;gap:2rem}
+    .nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;letter-spacing:.04em;text-decoration:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:.5rem}
+    .nav-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);flex-shrink:0;box-shadow:0 0 0 3px var(--cyan-glow)}
+    .nav-logo .w{color:var(--dark)}.nav-logo .c{color:var(--cyan)}
+    .nav-links{flex:1;display:flex;justify-content:center;gap:.3rem;list-style:none}
+    .nav-links a{font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--muted);padding:.4rem .85rem;border-radius:6px;cursor:pointer;transition:all .18s}
+    .nav-links a:hover{color:var(--text);background:var(--bg2)}.nav-links a.act{color:var(--cyan);background:var(--cyan-glow)}
+    .btn-discord{display:flex;align-items:center;gap:.45rem;background:#5865f2;color:white;padding:.5rem 1.2rem;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;text-decoration:none;flex-shrink:0;box-shadow:0 2px 12px rgba(88,101,242,.35);transition:all .18s}
+    .btn-discord:hover{background:#4752c4;transform:translateY(-1px);box-shadow:0 4px 18px rgba(88,101,242,.45)}
+    .btn-discord svg{width:15px;height:15px;fill:white;flex-shrink:0}
 
-    body {
-      font-family: 'Space Mono', monospace;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+    /* HERO */
+    #s-hero{min-height:calc(100vh - 64px);display:grid;grid-template-columns:1fr 1fr;overflow:hidden;position:relative}
+    #s-hero::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse at 50% 50%,black 30%,transparent 80%)}
+    .hero-l{display:flex;flex-direction:column;justify-content:center;padding:5rem 3.5rem 5rem 5rem;position:relative;z-index:2}
+    .hero-r{display:flex;align-items:center;justify-content:center;padding:4rem 3rem;position:relative;z-index:2}
+    .hero-r::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 60% 50%,rgba(14,184,232,.08) 0%,transparent 70%)}
+    .hero-badge{display:inline-flex;align-items:center;gap:.5rem;font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);background:var(--cyan-glow);border:1px solid rgba(14,184,232,.3);padding:.35rem .9rem;border-radius:100px;margin-bottom:2rem;width:fit-content;animation:fadeUp .7s ease both}
+    .hero-badge::before{content:'▶';font-size:.5rem}
+    h1.hero-h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(3rem,5.5vw,5.5rem);line-height:1.0;letter-spacing:-.03em;color:var(--dark);margin-bottom:1.8rem;animation:fadeUp .7s .1s ease both}
+    .hero-h1 .acc{color:var(--cyan);position:relative;display:inline-block}
+    .hero-h1 .acc::after{content:'.';color:var(--pink)}
+    .hero-h1 .underl{text-decoration:underline;text-decoration-color:var(--pink);text-underline-offset:6px;text-decoration-thickness:3px}
+    .hero-p{font-size:1rem;line-height:1.75;color:var(--muted);max-width:420px;margin-bottom:2.5rem;font-weight:300;animation:fadeUp .7s .2s ease both}
+    .hero-ctas{display:flex;gap:.85rem;flex-wrap:wrap;animation:fadeUp .7s .3s ease both}
+    .btn-p{display:inline-flex;align-items:center;gap:.5rem;background:var(--cyan);color:white;padding:.8rem 1.6rem;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;text-decoration:none;border:none;box-shadow:0 4px 18px rgba(14,184,232,.38);transition:all .2s}
+    .btn-p:hover{background:var(--cyan2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(14,184,232,.45)}
+    .btn-s{display:inline-flex;align-items:center;gap:.5rem;background:white;color:var(--text);padding:.8rem 1.6rem;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;text-decoration:none;border:1.5px solid var(--line);box-shadow:var(--shadow-s);transition:all .2s}
+    .btn-s:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-2px);box-shadow:var(--shadow-m)}
+    .hero-shot-wrap{position:relative;animation:fadeUp .8s .4s ease both}
+    .hero-shot{width:460px;max-width:100%;aspect-ratio:16/10;border-radius:14px;border:1.5px solid rgba(255,255,255,.9);box-shadow:0 30px 80px rgba(10,22,40,.18),0 0 0 1px rgba(10,22,40,.06);background:linear-gradient(135deg,#a89cee 0%,#c0a8f0 30%,#d4b0ec 55%,#f0a8cc 100%);position:relative;overflow:hidden}
+    .hero-shot::before{content:'';position:absolute;inset:0;background-image:linear-gradient(45deg,rgba(255,255,255,.14) 25%,transparent 25%),linear-gradient(-45deg,rgba(255,255,255,.14) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgba(255,255,255,.14) 75%),linear-gradient(-45deg,transparent 75%,rgba(255,255,255,.14) 75%);background-size:44px 44px;background-position:0 0,0 22px,22px -22px,-22px 0}
+    .hero-shot::after{content:'';position:absolute;top:0;left:0;right:0;height:32px;background:rgba(255,255,255,.2);backdrop-filter:blur(4px);border-bottom:1px solid rgba(255,255,255,.25)}
+    .shot-dots{position:absolute;top:10px;left:14px;display:flex;gap:6px;z-index:2}
+    .shot-dots span{width:11px;height:11px;border-radius:50%}
+    .shot-dots .d1{background:#ff5f57}.shot-dots .d2{background:#febc2e}.shot-dots .d3{background:#28c840}
+    .hero-tag{position:absolute;bottom:-14px;right:20px;background:var(--pink);color:white;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;padding:.55rem 1.2rem;border-radius:100px;box-shadow:0 4px 16px rgba(240,97,154,.35)}
+    .orb{position:absolute;border-radius:50%;filter:blur(50px);pointer-events:none}
+    .orb-1{width:260px;height:260px;background:rgba(14,184,232,.15);top:10%;right:8%}
+    .orb-2{width:180px;height:180px;background:rgba(240,97,154,.12);bottom:15%;right:30%}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 
-    .page { display: none; }
-    .page.active { display: block; }
+    /* SHARED */
+    .wrap{max-width:1180px;margin:0 auto;padding:3.5rem 2rem}
 
-    /* ── NAV ── */
-    nav {
-      position: sticky; top: 0; z-index: 200;
-      background: var(--white);
-      border-bottom: 1px solid #dde8f0;
-      display: flex; align-items: center;
-      padding: 0 2.5rem; height: 62px;
-      gap: 2rem;
-    }
-    .nav-logo {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900; font-size: 1.1rem;
-      letter-spacing: 0.06em; text-decoration: none; cursor: pointer;
-      flex-shrink: 0;
-    }
-    .nav-logo .w { color: var(--text); }
-    .nav-logo .c { color: var(--cyan); }
-    .nav-links { flex: 1; display: flex; justify-content: center; gap: 2.2rem; list-style: none; }
-    .nav-links a {
-      font-family: 'Barlow', sans-serif; font-size: 0.78rem; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none;
-      color: var(--text); padding-bottom: 3px; border-bottom: 2px solid transparent;
-      cursor: pointer; transition: color 0.18s, border-color 0.18s;
-    }
-    .nav-links a:hover, .nav-links a.act { color: var(--cyan); border-bottom-color: var(--cyan); }
-    .btn-discord {
-      display: flex; align-items: center; gap: 0.4rem;
-      background: #5865f2; color: white; border: none;
-      padding: 0.5rem 1.1rem; border-radius: 4px;
-      font-family: 'Barlow', sans-serif; font-size: 0.82rem; font-weight: 700;
-      cursor: pointer; text-decoration: none; flex-shrink: 0; transition: background 0.18s;
-    }
-    .btn-discord:hover { background: #4752c4; }
-    .btn-discord svg { width: 15px; height: 15px; fill: white; }
+    /* PROGRESS */
+    .prog-card{background:white;border-radius:var(--r);border:1.5px solid var(--line);padding:1.6rem 2rem;margin-bottom:3.5rem;box-shadow:var(--shadow-s)}
+    .prog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+    .prog-title{display:flex;align-items:center;gap:.6rem;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:.03em;text-transform:uppercase}
+    .prog-sq{width:12px;height:12px;border-radius:3px;background:var(--cyan);flex-shrink:0}
+    .prog-pct{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--cyan)}
+    .prog-track{width:100%;height:8px;background:var(--bg2);border-radius:100px;margin-bottom:.8rem;overflow:hidden}
+    .prog-fill{height:100%;width:2%;background:linear-gradient(90deg,var(--cyan2),var(--cyan));border-radius:100px;box-shadow:0 0 8px rgba(14,184,232,.4)}
+    .prog-note{font-size:.78rem;color:var(--muted2)}
 
-    /* ── HERO ── */
-    #s-hero {
-      min-height: calc(100vh - 62px);
-      display: grid; grid-template-columns: 1fr 1fr;
-      overflow: hidden; position: relative;
-    }
-    .hero-l {
-      background: var(--bg);
-      display: flex; flex-direction: column; justify-content: center;
-      padding: 4rem 3rem 4rem 5rem;
-      clip-path: polygon(0 0, 88% 0, 100% 100%, 0 100%);
-      position: relative; z-index: 2;
-    }
-    .hero-r {
-      background: var(--bg-dark);
-      display: flex; align-items: center; justify-content: center;
-      padding: 4rem 3rem;
-    }
-    .hero-badge {
-      display: inline-block;
-      font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--cyan); border: 2px solid var(--cyan);
-      padding: 0.3rem 0.8rem; margin-bottom: 1.6rem;
-    }
-    .hero-h1 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900; font-size: clamp(3.2rem, 6vw, 5.8rem);
-      line-height: 0.93; letter-spacing: -0.01em; text-transform: uppercase;
-      color: var(--text); margin-bottom: 1.6rem;
-    }
-    .hero-h1 .acc {
-      color: var(--cyan);
-      text-decoration: underline;
-      text-decoration-color: var(--pink);
-      text-underline-offset: 8px;
-      text-decoration-thickness: 3px;
-    }
-    .hero-p {
-      font-size: 0.82rem; line-height: 1.75; color: var(--muted);
-      max-width: 370px; margin-bottom: 2rem;
-    }
-    .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; }
+    /* SECTION */
+    .sec-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.6rem}
+    .sec-label{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:.4rem}
+    .sec-h{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.8rem,3vw,2.4rem);letter-spacing:-.02em}
+    .sec-sub{font-size:.88rem;color:var(--muted);margin-top:.3rem;font-weight:300}
+    .sec-link{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);text-decoration:none;cursor:pointer;display:flex;align-items:center;gap:.3rem;padding:.4rem .8rem;border-radius:6px;border:1.5px solid var(--line);transition:all .18s;white-space:nowrap}
+    .sec-link:hover{color:var(--cyan);border-color:var(--cyan);background:var(--cyan-glow)}
 
-    .btn-p {
-      display: flex; align-items: center; gap: 0.45rem;
-      background: var(--cyan); color: white; border: 2px solid var(--cyan);
-      padding: 0.75rem 1.5rem;
-      font-family: 'Space Mono', monospace; font-size: 0.68rem;
-      letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none;
-      cursor: pointer; transition: all 0.18s; font-weight: 700;
-    }
-    .btn-p:hover { background: var(--cyan-d); border-color: var(--cyan-d); }
-    .btn-s {
-      display: flex; align-items: center; gap: 0.45rem;
-      background: transparent; color: var(--text); border: 2px solid var(--text);
-      padding: 0.75rem 1.5rem;
-      font-family: 'Space Mono', monospace; font-size: 0.68rem;
-      letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none;
-      cursor: pointer; transition: all 0.18s; font-weight: 700;
-    }
-    .btn-s:hover { background: var(--text); color: white; }
+    /* FEATURE CARDS */
+    .feat-grid{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px}
+    .feat-r2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .feat-r-col{display:flex;flex-direction:column;gap:10px}
+    .fc{padding:2rem 2rem 2.2rem;border-radius:var(--r);border:1.5px solid transparent;transition:transform .22s,box-shadow .22s;position:relative;overflow:hidden}
+    .fc:hover{transform:translateY(-3px)}
+    .fc.cyan{background:var(--cyan);box-shadow:0 4px 24px rgba(14,184,232,.22)}.fc.cyan:hover{box-shadow:0 10px 36px rgba(14,184,232,.35)}
+    .fc.pink{background:var(--pink);box-shadow:0 4px 24px rgba(240,97,154,.22)}.fc.pink:hover{box-shadow:0 10px 36px rgba(240,97,154,.35)}
+    .fc.teal{background:var(--teal);box-shadow:0 4px 24px rgba(16,206,186,.22)}.fc.teal:hover{box-shadow:0 10px 36px rgba(16,206,186,.35)}
+    .fc.yellow{background:var(--yellow);box-shadow:0 4px 24px rgba(245,204,0,.25)}.fc.yellow:hover{box-shadow:0 10px 36px rgba(245,204,0,.4)}
+    .fc.white{background:white;border-color:var(--line);box-shadow:var(--shadow-s)}.fc.white:hover{box-shadow:var(--shadow-m)}
+    .fc.light{background:var(--bg2);border-color:var(--line);box-shadow:var(--shadow-s)}.fc.light:hover{box-shadow:var(--shadow-m)}
+    .fc-head{display:flex;align-items:center;gap:.55rem;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.2rem;color:var(--dark)}
+    .fc-head svg{width:15px;height:15px;flex-shrink:0;opacity:.75}
+    .fc-list{list-style:none;display:flex;flex-direction:column;gap:.6rem;color:rgba(10,22,40,.85)}
+    .fc-list li{font-size:.82rem;line-height:1.6;display:flex;align-items:flex-start;gap:.5rem;padding-bottom:.6rem;border-bottom:1px solid rgba(10,22,40,.08)}
+    .fc-list li:last-child{border-bottom:none;padding-bottom:0}
+    .fc-list li::before{content:'→';flex-shrink:0;opacity:.6;font-size:.75rem;margin-top:.1rem}
+    .fc-list strong{font-weight:600}
 
-    .hero-shot-wrap { position: relative; }
-    .hero-shot {
-      width: 460px; max-width: 100%;
-      aspect-ratio: 16/10;
-      border: 3px solid var(--dark);
-      box-shadow: 8px 8px 0 var(--dark);
-      background: linear-gradient(125deg, #9988e8 0%, #b8a8f0 35%, #c8b0f0 55%, #e8a8d0 100%);
-      position: relative; overflow: hidden;
-    }
-    .hero-shot::before {
-      content: '';
-      position: absolute; inset: 0;
-      background-image:
-        linear-gradient(45deg,rgba(255,255,255,0.18) 25%,transparent 25%),
-        linear-gradient(-45deg,rgba(255,255,255,0.18) 25%,transparent 25%),
-        linear-gradient(45deg,transparent 75%,rgba(255,255,255,0.18) 75%),
-        linear-gradient(-45deg,transparent 75%,rgba(255,255,255,0.18) 75%);
-      background-size: 44px 44px;
-      background-position: 0 0, 0 22px, 22px -22px, -22px 0;
-    }
-    .hero-tag {
-      position: absolute; bottom: -18px; right: -8px;
-      background: var(--pink); color: white;
-      font-family: 'Space Mono', monospace; font-size: 0.6rem;
-      letter-spacing: 0.16em; text-transform: uppercase;
-      padding: 0.55rem 1.1rem; border: 2px solid var(--dark);
-    }
+    /* HOME DOWNLOADS */
+    .dl-sec{margin-top:4rem}
+    .dl-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:1.2rem}
+    .dl-card{background:white;border-radius:var(--r);border:1.5px solid var(--line);padding:1.4rem 1.6rem;display:flex;align-items:center;gap:1.1rem;cursor:pointer;text-decoration:none;color:var(--text);box-shadow:var(--shadow-s);transition:all .2s}
+    .dl-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-m);border-color:var(--cyan)}
+    .dl-icon{width:36px;height:36px;flex-shrink:0}
+    .dl-t{font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.04em;text-transform:uppercase}
+    .dl-sub{font-size:.72rem;color:var(--muted2);margin-top:.15rem}
 
-    /* ── INNER WRAPPER ── */
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
+    /* COMMUNITY */
+    .community{margin-top:5rem;background:var(--dark);padding:5rem 2rem;position:relative;overflow:hidden}
+    .community::before{content:'';position:absolute;bottom:-60px;left:-60px;width:240px;height:240px;border-radius:50%;background:rgba(14,184,232,.12);filter:blur(60px)}
+    .community::after{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(240,97,154,.1);filter:blur(50px)}
+    .community-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+    .community-h{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2rem,4vw,3rem);letter-spacing:-.02em;color:white;max-width:460px}
+    .community-h span{color:var(--cyan)}
+    .community-p{font-size:.9rem;color:rgba(255,255,255,.45);margin-top:.8rem;max-width:360px;line-height:1.7;font-weight:300}
+    .btn-discord-lg{display:inline-flex;align-items:center;gap:.6rem;background:#5865f2;color:white;border:none;padding:1rem 2rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 4px 20px rgba(88,101,242,.4);transition:all .2s;white-space:nowrap}
+    .btn-discord-lg:hover{background:#4752c4;transform:translateY(-2px);box-shadow:0 8px 30px rgba(88,101,242,.5)}
 
-    /* ── PROGRESS CARD ── */
-    .prog-card {
-      background: white; border: 2px solid var(--dark);
-      padding: 1.5rem 2rem; margin-bottom: 3.5rem;
-    }
-    .prog-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
-    .prog-title {
-      display: flex; align-items: center; gap: 0.6rem;
-      font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-      font-size: 1.05rem; letter-spacing: 0.06em; text-transform: uppercase;
-    }
-    .prog-sq { width: 14px; height: 14px; background: var(--cyan); border: 2px solid var(--dark); flex-shrink: 0; }
-    .prog-pct { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.2rem; color: var(--cyan); }
-    .prog-bg { width: 100%; height: 12px; background: var(--bg); border: 1px solid var(--border); margin-bottom: 0.7rem; }
-    .prog-fill { height: 100%; background: var(--cyan); width: 2%; }
-    .prog-note { font-size: 0.72rem; color: var(--muted); }
+    /* FOOTER */
+    footer{background:var(--dark2);color:#8899bb;padding:3.5rem 2rem 1.5rem}
+    .foot-in{max-width:1180px;margin:0 auto}
+    .foot-grid{display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:3rem;padding-bottom:2.5rem;margin-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.07)}
+    .foot-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;letter-spacing:.04em;cursor:pointer;margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem}
+    .foot-logo .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan)}
+    .foot-logo .w{color:white}.foot-logo .c{color:var(--cyan)}
+    .foot-desc{font-size:.78rem;line-height:1.75;color:#4a5a70}
+    .foot-col-h{font-family:'DM Mono',monospace;font-weight:500;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:#5a6e8a;margin-bottom:1.1rem}
+    .foot-links{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+    .foot-links a{font-size:.82rem;color:#4a5a70;text-decoration:none;cursor:pointer;transition:color .18s}
+    .foot-links a:hover{color:var(--cyan)}
+    .foot-social{display:flex;gap:.7rem}
+    .foot-social a{width:34px;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:#4a5a70;text-decoration:none;transition:all .18s}
+    .foot-social a:hover{color:white;border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.06)}
+    .foot-social svg{width:17px;height:17px;fill:currentColor;display:block}
+    .foot-bottom{text-align:center;font-size:.7rem;color:#2a3a50}
 
-    /* ── SECTION HEADER ── */
-    .sec-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.4rem; }
-    .sec-h { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 2.3rem; letter-spacing: 0.03em; text-transform: uppercase; }
-    .sec-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
-    .sec-link { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--text); text-decoration: none; cursor: pointer; }
-    .sec-link:hover { color: var(--cyan); }
+    /* PAGE HEADER */
+    .pg-head{max-width:1180px;margin:0 auto;padding:3.5rem 2rem 2rem;border-bottom:1px solid var(--line)}
+    .pg-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.2rem,5vw,3.5rem);letter-spacing:-.03em}
+    .pg-title .sl{color:var(--cyan)}
+    .pg-desc{font-size:.9rem;color:var(--muted);margin-top:.5rem;font-weight:300}
 
-    /* ── FEATURES ── */
-    .feat-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 8px; }
-    .feat-r2 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .feat-r-col { display: flex; flex-direction: column; gap: 8px; }
-    .fc {
-      padding: 2rem; border: 2px solid var(--dark);
-    }
-    .fc.cyan   { background: var(--cyan); }
-    .fc.pink   { background: var(--pink); }
-    .fc.teal   { background: var(--teal); }
-    .fc.yellow { background: var(--yellow); }
-    .fc.white  { background: white; }
-    .fc.light  { background: var(--bg); }
-    .fc-head {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-family: 'Barlow Condensed', sans-serif; font-weight: 900;
-      font-size: 0.92rem; letter-spacing: 0.1em; text-transform: uppercase;
-      margin-bottom: 1.2rem; color: var(--dark);
-    }
-    .fc-head svg { width: 16px; height: 16px; flex-shrink: 0; }
-    .fc-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; color: var(--dark); }
-    .fc-list li { font-size: 0.76rem; line-height: 1.55; display: flex; align-items: flex-start; gap: 0.5rem; }
-    .fc-list li::before { content: '→'; flex-shrink: 0; }
-    .fc-list strong { font-weight: 700; }
+    /* DOWNLOADS PAGE */
+    .dl-pg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:2rem}
+    .dl-pg-card{background:white;border-radius:var(--r);border:1.5px solid var(--line);padding:3rem 2rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1rem;cursor:pointer;text-decoration:none;color:var(--text);box-shadow:var(--shadow-s);transition:all .22s}
+    .dl-pg-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-l);border-color:var(--cyan)}
+    .dl-pg-icon{width:56px;height:56px}
+    .dl-pg-t{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;letter-spacing:.05em;text-transform:uppercase}
+    .dl-pg-btn{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);display:flex;align-items:center;gap:.35rem;padding:.45rem 1rem;border-radius:100px;border:1.5px solid var(--line);transition:all .18s}
+    .dl-pg-card:hover .dl-pg-btn{color:var(--cyan);border-color:var(--cyan);background:var(--cyan-glow)}
 
-    /* ── HOME DOWNLOADS ── */
-    .dl-sec { margin-top: 3.5rem; }
-    .dl-grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 1.2rem; }
-    .dl-card {
-      background: white; border: 2px solid var(--dark);
-      padding: 1.4rem 1.5rem;
-      display: flex; align-items: center; gap: 1rem;
-      cursor: pointer; text-decoration: none; color: var(--text);
-      transition: background 0.15s;
-    }
-    .dl-card:hover { background: var(--bg); }
-    .dl-icon { width: 34px; height: 34px; flex-shrink: 0; }
-    .dl-t { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 0.88rem; letter-spacing: 0.08em; text-transform: uppercase; }
-    .dl-sub { font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
+    /* WIKI */
+    .wiki-lay{max-width:1180px;margin:0 auto;padding:2rem 2rem 3rem;display:grid;grid-template-columns:210px 1fr;gap:1.5rem;align-items:start}
+    .wiki-sb{background:white;border-radius:var(--r);border:1.5px solid var(--line);box-shadow:var(--shadow-s);overflow:hidden;position:sticky;top:80px}
+    .wiki-sb-h{display:flex;align-items:center;gap:.5rem;padding:.9rem 1.1rem;font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2);border-bottom:1.5px solid var(--line);background:var(--bg)}
+    .wiki-sb-h svg{width:13px;height:13px;opacity:.6}
+    .wiki-sb-body{padding:.5rem}
+    .wiki-sb-item{display:block;width:100%;text-align:left;padding:.65rem .9rem;border-radius:7px;font-size:.82rem;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .15s}
+    .wiki-sb-item:hover{background:var(--bg2);color:var(--text)}
+    .wiki-sb-item.act{background:var(--cyan-glow);color:var(--cyan);font-weight:500;border-left:3px solid var(--cyan)}
+    .wiki-body{background:white;border-radius:var(--r);border:1.5px solid var(--line);padding:2.5rem 2.8rem;min-height:420px;box-shadow:var(--shadow-s)}
+    .wiki-body h2{font-family:'Syne',sans-serif;font-weight:800;font-size:1.65rem;margin-bottom:.5rem;letter-spacing:-.02em}
+    .wiki-body h3{font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;margin:2rem 0 .7rem;color:var(--dark)}
+    .wiki-body p{font-size:.88rem;line-height:1.8;color:var(--muted);margin-bottom:.8rem}
+    .wiki-body ol,.wiki-body ul{padding-left:1.5rem;margin-bottom:1rem}
+    .wiki-body li{font-size:.88rem;line-height:1.8;color:var(--muted);margin-bottom:.2rem}
+    .wiki-body hr{border:none;border-top:1.5px solid var(--line);margin:1.5rem 0}
+    .ktag{display:inline-block;background:var(--bg2);color:var(--cyan);font-family:'DM Mono',monospace;font-size:.75rem;padding:.15rem .55rem;border-radius:5px;border:1px solid rgba(14,184,232,.2)}
+    .btag{display:inline-block;background:var(--cyan-glow);color:var(--cyan2);font-family:'DM Mono',monospace;font-size:.72rem;padding:.15rem .55rem;border-radius:5px;border:1px solid rgba(14,184,232,.2);margin-right:.3rem}
+    .cblock{background:var(--dark);color:#8bb8e8;font-family:'DM Mono',monospace;font-size:.78rem;padding:1.4rem 1.6rem;margin:1rem 0;line-height:2;overflow-x:auto;border-radius:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+    .cblock .cm{color:#4a6a8a}.cblock .ck{color:#e8a878}.cblock .cs{color:#a8d8a8}
 
-    /* ── COMMUNITY ── */
-    .community {
-      background: var(--bg-dark);
-      padding: 5rem 2rem;
-      position: relative; overflow: hidden;
-    }
-    .community::before {
-      content: ''; position: absolute; bottom: 0; left: 0;
-      width: 75px; height: 75px; background: var(--cyan); opacity: 0.45;
-    }
-    .community::after {
-      content: ''; position: absolute; top: 0; right: 0;
-      width: 95px; height: 95px; background: var(--pink); opacity: 0.35;
-    }
-    .community-in {
-      max-width: 1200px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
-      position: relative; z-index: 1;
-    }
-    .community-h {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900; font-size: clamp(2rem, 4vw, 3.2rem);
-      text-transform: uppercase; letter-spacing: 0.02em; max-width: 460px;
-    }
-    .community-p { font-size: 0.78rem; color: var(--muted); margin-top: 0.75rem; max-width: 360px; line-height: 1.7; }
-    .btn-discord-lg {
-      display: flex; align-items: center; gap: 0.6rem;
-      background: #5865f2; color: white;
-      border: 2px solid var(--dark);
-      padding: 0.9rem 1.8rem;
-      font-family: 'Space Mono', monospace; font-size: 0.72rem;
-      font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-      cursor: pointer; text-decoration: none; transition: background 0.18s;
-    }
-    .btn-discord-lg:hover { background: #4752c4; }
+    /* CHANGELOG */
+    .cl-list{display:flex;flex-direction:column;gap:1rem;margin-top:2rem}
+    .cl-card{background:white;border-radius:var(--r);border:1.5px solid var(--line);padding:2rem 2.2rem;box-shadow:var(--shadow-s);transition:box-shadow .2s}
+    .cl-card:hover{box-shadow:var(--shadow-m)}
+    .cl-vrow{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;padding-bottom:1.2rem;border-bottom:1.5px solid var(--line)}
+    .cl-icon{font-size:1rem}
+    .cl-v{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;letter-spacing:-.02em}
+    .cl-d{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted2);padding:.25rem .7rem;background:var(--bg2);border-radius:100px}
+    .cl-items{display:flex;flex-direction:column;gap:.6rem}
+    .cl-item{display:flex;align-items:flex-start;gap:.75rem;font-size:.86rem;line-height:1.6;color:var(--muted)}
+    .tag{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:.6rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:.2rem .6rem;border-radius:100px;flex-shrink:0}
+    .t-a{background:rgba(34,197,94,.12);color:#16a34a;border:1px solid rgba(34,197,94,.25)}
+    .t-f{background:rgba(239,68,68,.10);color:#dc2626;border:1px solid rgba(239,68,68,.2)}
+    .t-i{background:rgba(59,130,246,.10);color:#2563eb;border:1px solid rgba(59,130,246,.2)}
 
-    /* ── FOOTER ── */
-    footer { background: var(--dark); color: #8899aa; padding: 3rem 2rem 1.5rem; }
-    .foot-in { max-width: 1200px; margin: 0 auto; }
-    .foot-grid {
-      display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 3rem;
-      padding-bottom: 2rem; margin-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .foot-logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.06em; cursor: pointer; margin-bottom: 0.7rem; }
-    .foot-logo .w { color: white; } .foot-logo .c { color: var(--cyan); }
-    .foot-desc { font-size: 0.73rem; line-height: 1.7; color: #5a6a80; }
-    .foot-col-h { font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: #99aabb; margin-bottom: 1rem; }
-    .foot-links { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
-    .foot-links a { font-size: 0.74rem; color: #5a6a80; text-decoration: none; cursor: pointer; transition: color 0.18s; }
-    .foot-links a:hover { color: var(--cyan); }
-    .foot-social { display: flex; gap: 0.7rem; }
-    .foot-social a { color: #5a6a80; text-decoration: none; transition: color 0.18s; }
-    .foot-social a:hover { color: white; }
-    .foot-social svg { width: 20px; height: 20px; fill: currentColor; display: block; }
-    .foot-bottom { text-align: center; font-size: 0.68rem; color: #3a4a5a; }
+    /* TEAM */
+    .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:2rem}
+    .team-card{background:white;border-radius:var(--r);border:1.5px solid var(--line);padding:2.2rem 1.5rem;text-align:center;box-shadow:var(--shadow-s);transition:all .22s}
+    .team-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-l)}
+    .team-av{width:76px;height:76px;margin:0 auto 1.2rem;border-radius:50%;display:block;object-fit:cover;border:3px solid white;box-shadow:0 0 0 2px var(--cyan-glow),var(--shadow-s)}
+    .team-name{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:.3rem}
+    .team-role{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:.9rem}
+    .team-bio{font-size:.78rem;color:var(--muted);line-height:1.65;font-weight:300}
 
-    /* ── PAGE HEADERS ── */
-    .pg-head { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem 2rem; }
-    .pg-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(2.5rem, 5vw, 4rem); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 0.5rem; }
-    .pg-title .sl { color: var(--cyan); }
-    .pg-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.6; }
+    /* GALLERY */
+    .gal-grid{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto;gap:12px;margin-top:2rem}
+    .gal-item{border-radius:var(--r);overflow:hidden;border:1.5px solid var(--line);box-shadow:var(--shadow-s);transition:all .22s}
+    .gal-item:hover{transform:translateY(-3px);box-shadow:var(--shadow-l)}
+    .gal-item.tall{grid-row:span 2}
+    .gal-cap{background:white;padding:.9rem 1.1rem;border-top:1.5px solid var(--line)}
+    .gal-ct{font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem}
+    .gal-cs{font-size:.72rem;color:var(--muted2);margin-top:.2rem}
 
-    /* ── DOWNLOADS PAGE ── */
-    .dl-pg-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 2rem; }
-    .dl-pg-card {
-      background: white; border: 2px solid var(--dark);
-      padding: 3rem 2rem; text-align: center;
-      display: flex; flex-direction: column; align-items: center; gap: 1rem;
-      cursor: pointer; text-decoration: none; color: var(--text); transition: background 0.15s;
-    }
-    .dl-pg-card:hover { background: var(--bg); }
-    .dl-pg-icon { width: 58px; height: 58px; }
-    .dl-pg-t { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.12em; text-transform: uppercase; }
-    .dl-pg-btn { font-family: 'Space Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 0.3rem; }
-
-    /* ── WIKI ── */
-    .wiki-lay { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem 3rem; display: grid; grid-template-columns: 215px 1fr; gap: 2rem; align-items: start; }
-    .wiki-sb { border: 2px solid var(--dark); background: white; overflow: hidden; }
-    .wiki-sb-h { display: flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1rem; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; border-bottom: 2px solid var(--dark); }
-    .wiki-sb-h svg { width: 13px; height: 13px; }
-    .wiki-sb-body { padding: 0.4rem 0; }
-    .wiki-sb-item { display: block; width: 100%; text-align: left; padding: 0.6rem 1rem; font-size: 0.75rem; cursor: pointer; border: none; background: transparent; color: var(--text); transition: background 0.15s; }
-    .wiki-sb-item:hover { background: var(--bg); }
-    .wiki-sb-item.act { background: var(--cyan); color: white; }
-    .wiki-body { background: #fafaf8; border: 2px solid var(--dark); padding: 2.5rem; min-height: 420px; }
-    .wiki-body h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.7rem; margin-bottom: 0.5rem; letter-spacing: 0.02em; }
-    .wiki-body h3 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.15rem; margin: 1.8rem 0 0.7rem; }
-    .wiki-body p { font-size: 0.8rem; line-height: 1.75; color: var(--muted); margin-bottom: 0.8rem; }
-    .wiki-body ol, .wiki-body ul { padding-left: 1.5rem; margin-bottom: 1rem; }
-    .wiki-body li { font-size: 0.8rem; line-height: 1.75; color: var(--muted); margin-bottom: 0.2rem; }
-    .ktag { display: inline-block; background: var(--cyan); color: white; font-family: 'Space Mono', monospace; font-size: 0.68rem; padding: 0.1rem 0.45rem; border-radius: 2px; }
-    .btag { display: inline-block; background: var(--cyan); color: white; font-family: 'Space Mono', monospace; font-size: 0.67rem; padding: 0.1rem 0.4rem; border-radius: 2px; margin-right: 0.3rem; }
-    .cblock { background: #1a1f2c; color: #b8c8e0; font-family: 'Space Mono', monospace; font-size: 0.73rem; padding: 1.4rem 1.6rem; margin: 1rem 0; line-height: 1.85; overflow-x: auto; border-radius: 2px; }
-
-    /* ── CHANGELOG ── */
-    .cl-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
-    .cl-card { background: white; border: 2px solid var(--dark); padding: 2rem; }
-    .cl-vrow { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1.2rem; }
-    .cl-v { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.5rem; }
-    .cl-d { font-size: 0.72rem; color: var(--muted); }
-    .cl-items { display: flex; flex-direction: column; gap: 0.5rem; }
-    .cl-item { display: flex; align-items: flex-start; gap: 0.7rem; font-size: 0.78rem; line-height: 1.5; }
-    .tag { display: inline-block; font-family: 'Barlow', sans-serif; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.18rem 0.5rem; border-radius: 3px; flex-shrink: 0; margin-top: 0.05rem; }
-    .t-a { background: #22c55e; color: white; }
-    .t-f { background: #ef4444; color: white; }
-    .t-i { background: #3b82f6; color: white; }
-
-    /* ── TEAM ── */
-    .team-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 2rem; }
-    .team-card { background: white; border: 2px solid var(--dark); padding: 2rem 1.5rem; text-align: center; }
-    .team-av { width: 78px; height: 78px; margin: 0 auto 1rem; border: 2px solid var(--dark); display: block; object-fit: cover; }
-    .team-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
-    .team-role { font-family: 'Barlow', sans-serif; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cyan); margin-bottom: 0.8rem; }
-    .team-bio { font-size: 0.73rem; color: var(--muted); line-height: 1.6; }
-
-    /* ── GALLERY ── */
-    .gal-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: auto auto;
-      gap: 12px; margin-top: 2rem;
-    }
-    .gal-item { border: 2px solid var(--dark); overflow: hidden; }
-    .gal-item.tall { grid-row: span 2; }
-    .gal-img { width: 100%; display: block; }
-    .gal-cap { background: white; padding: 0.75rem 1rem; border-top: 2px solid var(--dark); }
-    .gal-ct { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 0.88rem; letter-spacing: 0.04em; }
-    .gal-cs { font-size: 0.68rem; color: var(--muted); margin-top: 0.18rem; }
-
-    /* Responsive */
-    @media (max-width: 900px) {
-      #s-hero { grid-template-columns: 1fr; }
-      .hero-l { clip-path: none; padding: 3rem 2rem; }
-      .hero-r { display: none; }
-      .feat-grid { grid-template-columns: 1fr; }
-      .feat-r2 { grid-template-columns: 1fr; }
-      .dl-grid3, .dl-pg-grid { grid-template-columns: 1fr; }
-      .team-grid { grid-template-columns: 1fr 1fr; }
-      .gal-grid { grid-template-columns: 1fr; }
-      .wiki-lay { grid-template-columns: 1fr; }
-      .community-in { flex-direction: column; gap: 2rem; }
-      .foot-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-      nav ul { gap: 1rem; }
+    /* RESPONSIVE */
+    @media(max-width:900px){
+      #s-hero{grid-template-columns:1fr}.hero-l{padding:3rem 2rem}.hero-r{display:none}
+      .feat-grid{grid-template-columns:1fr}.feat-r2{grid-template-columns:1fr}.feat-r-col{flex-direction:column}
+      .dl-grid3,.dl-pg-grid{grid-template-columns:1fr}.team-grid{grid-template-columns:1fr 1fr}
+      .gal-grid{grid-template-columns:1fr}.wiki-lay{grid-template-columns:1fr}.wiki-sb{position:static}
+      .community-in{flex-direction:column;gap:2.5rem}.foot-grid{grid-template-columns:1fr;gap:2rem}
+      nav{padding:0 1.5rem}.nav-links{gap:0}
     }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
-  <span class="nav-logo" onclick="go('home')"><span class="w">OVERLOAD</span><span class="c">ENGINE</span></span>
+  <span class="nav-logo" onclick="go('home')"><div class="dot"></div><span class="w">OVERLOAD</span><span class="c">ENGINE</span></span>
   <ul class="nav-links">
     <li><a onclick="go('home')" data-pg="home">Home</a></li>
     <li><a onclick="go('dl')" data-pg="dl">Downloads</a></li>
@@ -393,13 +241,14 @@
   </a>
 </nav>
 
-<!-- ══ HOME ══ -->
+<!-- HOME -->
 <div id="pg-home" class="page active">
   <section id="s-hero">
+    <div class="orb orb-1"></div><div class="orb orb-2"></div>
     <div class="hero-l">
       <div class="hero-badge">Friday Night Funkin' Engine</div>
-      <h1 class="hero-h1">MAKING<br>MODDING<br><span class="acc">EASIER.</span></h1>
-      <p class="hero-p">Combination of all Popular FNF Engines —<br>Codename, Psych, and V-Slice — into one<br>ultimate modding platform.</p>
+      <h1 class="hero-h1">MAKING<br>MODDING<br><span class="underl acc">EASIER</span></h1>
+      <p class="hero-p">Combination of all Popular FNF Engines — Codename, Psych, and V-Slice — into one ultimate modding platform.</p>
       <div class="hero-ctas">
         <a onclick="go('dl')" class="btn-p">⬇ Download Engine</a>
         <a onclick="go('wiki')" class="btn-s">📖 Read Wiki</a>
@@ -407,35 +256,24 @@
     </div>
     <div class="hero-r">
       <div class="hero-shot-wrap">
-        <div class="hero-shot"></div>
+        <div class="hero-shot"><div class="shot-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div></div>
         <div class="hero-tag">Built for Modders, by Modders</div>
       </div>
     </div>
   </section>
-
   <div class="wrap">
-    <!-- Progress -->
     <div class="prog-card">
-      <div class="prog-row">
-        <div class="prog-title"><div class="prog-sq"></div>Development Progress</div>
-        <div class="prog-pct">2%</div>
-      </div>
-      <div class="prog-bg"><div class="prog-fill"></div></div>
+      <div class="prog-row"><div class="prog-title"><div class="prog-sq"></div>Development Progress</div><div class="prog-pct">2%</div></div>
+      <div class="prog-track"><div class="prog-fill"></div></div>
       <div class="prog-note">Overload Engine is in early development. Stay tuned for updates!</div>
     </div>
-
-    <!-- Features -->
     <div class="sec-row">
-      <div><div class="sec-h">FEATURES</div><div class="sec-sub">Everything you need in one engine.</div></div>
-      <a onclick="go('wiki')" class="sec-link">LEARN MORE ↗</a>
+      <div><div class="sec-label">// Features</div><div class="sec-h">Everything in one engine.</div><div class="sec-sub">Everything you need to build incredible FNF mods.</div></div>
+      <a onclick="go('wiki')" class="sec-link">Learn More ↗</a>
     </div>
-
     <div class="feat-grid">
       <div class="fc cyan">
-        <div class="fc-head">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M12 2v2m0 16v2m10-10h-2M4 12H2"/></svg>
-          Core Engine
-        </div>
+        <div class="fc-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M12 2v2m0 16v2m10-10h-2M4 12H2"/></svg>Core Engine</div>
         <ul class="fc-list">
           <li><strong>Deep State Injection</strong> — Load any game state inside an editor overlay for live tweaking</li>
           <li><strong>Automated Backup System</strong> — Creates _backup.hsc files before any file write operations</li>
@@ -445,169 +283,67 @@
       </div>
       <div class="feat-r-col">
         <div class="fc pink">
-          <div class="fc-head">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            Editor Suite
-          </div>
-          <ul class="fc-list">
-            <li><strong>Ultimate UI Builder</strong> — Drag-and-drop with live HScript preview</li>
-            <li><strong>Asset Browser</strong> — In-game file explorer for all assets</li>
-          </ul>
+          <div class="fc-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Editor Suite</div>
+          <ul class="fc-list"><li><strong>Ultimate UI Builder</strong> — Drag-and-drop with live HScript preview</li><li><strong>Asset Browser</strong> — In-game file explorer for all assets</li></ul>
         </div>
         <div class="fc teal">
-          <div class="fc-head">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            Extensibility
-          </div>
-          <ul class="fc-list">
-            <li><strong>Menu Cloning</strong> — Save layouts as reusable templates</li>
-            <li><strong>Global Object Scanner</strong> — Auto-detect and edit every sprite</li>
-          </ul>
+          <div class="fc-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Extensibility</div>
+          <ul class="fc-list"><li><strong>Menu Cloning</strong> — Save layouts as reusable templates</li><li><strong>Global Object Scanner</strong> — Auto-detect and edit every sprite</li></ul>
         </div>
       </div>
     </div>
-
     <div class="feat-r2">
       <div class="fc yellow">
-        <div class="fc-head">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          Live Scripting
-        </div>
-        <ul class="fc-list">
-          <li><strong>Live Script Console</strong> — Edit scripts while running, apply instantly</li>
-          <li><strong>Animation Lab</strong> — Create complex tweens in real-time</li>
-        </ul>
+        <div class="fc-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Live Scripting</div>
+        <ul class="fc-list"><li><strong>Live Script Console</strong> — Edit scripts while running, apply instantly</li><li><strong>Animation Lab</strong> — Create complex tweens in real-time</li></ul>
       </div>
       <div class="fc white">
-        <div class="fc-head">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Stability
-        </div>
-        <ul class="fc-list">
-          <li><strong>Smart Errors</strong> — Custom crash substates with clear explanations</li>
-          <li><strong>Camera Sync</strong> — Multi-camera setups prevent black screens</li>
-        </ul>
+        <div class="fc-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Stability</div>
+        <ul class="fc-list"><li><strong>Smart Errors</strong> — Custom crash substates with clear explanations</li><li><strong>Camera Sync</strong> — Multi-camera setups prevent black screens</li></ul>
       </div>
       <div class="fc light">
-        <div class="fc-head">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Input Masks
-        </div>
-        <ul class="fc-list">
-          <li><strong>Live Input Masks</strong> — Rename variables directly in the editor</li>
-        </ul>
+        <div class="fc-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Input Masks</div>
+        <ul class="fc-list"><li><strong>Live Input Masks</strong> — Rename variables directly in the editor</li></ul>
       </div>
     </div>
-
-    <!-- Downloads -->
     <div class="dl-sec">
-      <div class="sec-row"><div><div class="sec-h">DOWNLOADS</div></div></div>
+      <div class="sec-row"><div><div class="sec-label">// Get it</div><div class="sec-h">Downloads</div></div></div>
       <div class="dl-grid3">
-        <a href="#" class="dl-card">
-          <svg class="dl-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-          <div><div class="dl-t">GitHub Releases</div><div class="dl-sub">Get Overload Engine</div></div>
-        </a>
-        <a href="#" class="dl-card">
-          <svg class="dl-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><path fill="white" d="M10 8.5C10 8.22 10.22 8 10.5 8s.5.22.5.5v3.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L10 12.293V8.5z"/></svg>
-          <div><div class="dl-t">GameBanana</div><div class="dl-sub">Get Overload Engine</div></div>
-        </a>
-        <a href="#" class="dl-card">
-          <svg class="dl-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="6" width="20" height="14" rx="2"/><path fill="white" d="M8 10h8v2H8zm2 3h4v1h-4z"/></svg>
-          <div><div class="dl-t">Itch.io</div><div class="dl-sub">Get Overload Engine</div></div>
-        </a>
+        <a href="#" class="dl-card"><svg class="dl-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg><div><div class="dl-t">GitHub Releases</div><div class="dl-sub">Get Overload Engine</div></div></a>
+        <a href="#" class="dl-card"><svg class="dl-icon" viewBox="0 0 24 24" fill="#f96854"><circle cx="12" cy="12" r="12"/><path fill="white" d="M6 8.5L12 5l6 3.5v5L12 17l-6-3.5v-5z"/></svg><div><div class="dl-t">GameBanana</div><div class="dl-sub">Get Overload Engine</div></div></a>
+        <a href="#" class="dl-card"><svg class="dl-icon" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#fa5c5c"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="white" font-family="sans-serif" font-weight="bold">itch</text></svg><div><div class="dl-t">Itch.io</div><div class="dl-sub">Get Overload Engine</div></div></a>
       </div>
     </div>
-  </div><!-- /wrap -->
-
-  <!-- Community -->
+  </div>
   <div class="community">
     <div class="community-in">
-      <div>
-        <div class="community-h">JOIN THE COMMUNITY</div>
-        <div class="community-p">Get help, share your mods, and stay up to date with the latest Overload Engine news.</div>
-      </div>
-      <a href="#" class="btn-discord-lg">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.056a19.893 19.893 0 0 0 5.993 3.03.077.077 0 0 0 .084-.026c.462-.63.874-1.295 1.226-1.994.076-.13.029-.295-.105-.345a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-        JOIN DISCORD
-      </a>
+      <div><div class="community-h">Join the <span>Community</span></div><div class="community-p">Get help, share your mods, and stay up to date with the latest Overload Engine news.</div></div>
+      <a href="#" class="btn-discord-lg"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.056a19.893 19.893 0 0 0 5.993 3.03.077.077 0 0 0 .084-.026c.462-.63.874-1.295 1.226-1.994.076-.13.029-.295-.105-.345a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>Join Discord</a>
     </div>
   </div>
-
-  <!-- Footer -->
-  <footer><div class="foot-in">
-    <div class="foot-grid">
-      <div>
-        <div class="foot-logo" onclick="go('home')"><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div>
-        <div class="foot-desc">Making Modding easier with new features. Combination of all Popular FNF Engines.</div>
-      </div>
-      <div>
-        <div class="foot-col-h">Links</div>
-        <ul class="foot-links">
-          <li><a onclick="go('dl')">Downloads</a></li>
-          <li><a onclick="go('wiki')">Wiki</a></li>
-          <li><a onclick="go('cl')">Changelog</a></li>
-          <li><a onclick="go('team')">Team</a></li>
-          <li><a onclick="go('gal')">Gallery</a></li>
-        </ul>
-      </div>
-      <div>
-        <div class="foot-col-h">Community</div>
-        <div class="foot-social">
-          <a href="#" title="GitHub"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a>
-          <a href="#" title="Discord"><svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.056a19.893 19.893 0 0 0 5.993 3.03.077.077 0 0 0 .084-.026c.462-.63.874-1.295 1.226-1.994.076-.13.029-.295-.105-.345a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg></a>
-        </div>
-      </div>
-    </div>
-    <div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div>
-  </div></footer>
-</div><!-- /home -->
-
-<!-- ══ DOWNLOADS ══ -->
-<div id="pg-dl" class="page">
-  <div class="pg-head"><div class="pg-title">DOWNLOADS</div><div class="pg-desc">Get the latest version of Overload Engine from your preferred platform.</div></div>
-  <div class="wrap" style="padding-top:0;">
-    <div class="prog-card">
-      <div class="prog-row"><div class="prog-title"><div class="prog-sq"></div>Development Progress</div><div class="prog-pct">2%</div></div>
-      <div class="prog-bg"><div class="prog-fill"></div></div>
-      <div class="prog-note">Early development — more features coming soon!</div>
-    </div>
-    <div class="dl-pg-grid">
-      <a href="#" class="dl-pg-card">
-        <svg class="dl-pg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-        <div class="dl-pg-t">GitHub Releases</div>
-        <div class="dl-pg-btn">⬇ Download</div>
-      </a>
-      <a href="#" class="dl-pg-card">
-        <svg class="dl-pg-icon" viewBox="0 0 100 100" fill="currentColor"><circle cx="50" cy="50" r="50"/><path fill="white" d="M30 65 Q50 20 70 65 Q60 55 50 62 Q40 55 30 65Z"/></svg>
-        <div class="dl-pg-t">GameBanana</div>
-        <div class="dl-pg-btn">⬇ Download</div>
-      </a>
-      <a href="#" class="dl-pg-card">
-        <svg class="dl-pg-icon" viewBox="0 0 100 100"><rect width="100" height="100" rx="8" fill="#222"/><rect x="10" y="30" width="80" height="50" rx="4" fill="#555"/><rect x="20" y="20" width="60" height="15" rx="3" fill="#ff3860"/><text x="50" y="64" text-anchor="middle" font-size="22" fill="white" font-weight="bold">itch</text></svg>
-        <div class="dl-pg-t">Itch.io</div>
-        <div class="dl-pg-btn">⬇ Download</div>
-      </a>
-    </div>
-  </div>
-  <footer style="margin-top:3rem;"><div class="foot-in">
-    <div class="foot-grid">
-      <div><div class="foot-logo" onclick="go('home')"><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features. Combination of all Popular FNF Engines.</div></div>
-      <div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div>
-      <div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a><a href="#"><svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.056a19.893 19.893 0 0 0 5.993 3.03.077.077 0 0 0 .084-.026c.462-.63.874-1.295 1.226-1.994.076-.13.029-.295-.105-.345a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg></a></div></div>
-    </div>
-    <div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div>
-  </div></footer>
+  <footer><div class="foot-in"><div class="foot-grid"><div><div class="foot-logo" onclick="go('home')"><div class="dot"></div><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features. Combination of all Popular FNF Engines.</div></div><div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div><div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#" title="GitHub"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a><a href="#" title="Discord"><svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.056a19.893 19.893 0 0 0 5.993 3.03.077.077 0 0 0 .084-.026c.462-.63.874-1.295 1.226-1.994.076-.13.029-.295-.105-.345a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg></a></div></div></div><div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div></div></footer>
 </div>
 
-<!-- ══ WIKI ══ -->
+<!-- DOWNLOADS -->
+<div id="pg-dl" class="page">
+  <div class="pg-head"><div class="pg-title">Downloads</div><div class="pg-desc">Get the latest version of Overload Engine from your preferred platform.</div></div>
+  <div class="wrap" style="padding-top:1.5rem">
+    <div class="prog-card"><div class="prog-row"><div class="prog-title"><div class="prog-sq"></div>Development Progress</div><div class="prog-pct">2%</div></div><div class="prog-track"><div class="prog-fill"></div></div><div class="prog-note">Early development — more features coming soon!</div></div>
+    <div class="dl-pg-grid">
+      <a href="#" class="dl-pg-card"><svg class="dl-pg-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg><div class="dl-pg-t">GitHub Releases</div><div class="dl-pg-btn">⬇ Download</div></a>
+      <a href="#" class="dl-pg-card"><svg class="dl-pg-icon" viewBox="0 0 24 24" fill="#f96854"><circle cx="12" cy="12" r="12"/><path fill="white" d="M6 8.5L12 5l6 3.5v5L12 17l-6-3.5v-5z"/></svg><div class="dl-pg-t">GameBanana</div><div class="dl-pg-btn">⬇ Download</div></a>
+      <a href="#" class="dl-pg-card"><svg class="dl-pg-icon" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#fa5c5c"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="white" font-family="sans-serif" font-weight="bold">itch</text></svg><div class="dl-pg-t">Itch.io</div><div class="dl-pg-btn">⬇ Download</div></a>
+    </div>
+  </div>
+  <footer style="margin-top:4rem"><div class="foot-in"><div class="foot-grid"><div><div class="foot-logo" onclick="go('home')"><div class="dot"></div><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features.</div></div><div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div><div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a><a href="#"><svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.056a19.893 19.893 0 0 0 5.993 3.03.077.077 0 0 0 .084-.026c.462-.63.874-1.295 1.226-1.994.076-.13.029-.295-.105-.345a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg></a></div></div></div><div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div></div></footer>
+</div>
+
+<!-- WIKI -->
 <div id="pg-wiki" class="page">
-  <div class="pg-head"><div class="pg-title">WIKI<span class="sl">/</span>DOCUMENTATION</div></div>
+  <div class="pg-head"><div class="pg-title">Wiki<span class="sl"> / </span>Documentation</div></div>
   <div class="wiki-lay">
     <div class="wiki-sb">
-      <div class="wiki-sb-h">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Sections
-      </div>
+      <div class="wiki-sb-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Sections</div>
       <div class="wiki-sb-body">
         <button class="wiki-sb-item act" onclick="wikiGo('gs',this)">Getting Started</button>
         <button class="wiki-sb-item" onclick="wikiGo('ds',this)">Deep State Injection</button>
@@ -619,22 +355,14 @@
     <div class="wiki-body">
       <div id="ws-gs">
         <h2>Getting Started with Overload Engine</h2>
-        <p>Welcome to Overload Engine! This guide will help you set up your first mod.</p>
+        <p>Welcome to Overload Engine! This guide will help you set up your first mod.</p><hr>
         <h3>Installation</h3>
-        <ol>
-          <li>Download the latest release from the Downloads page</li>
-          <li>Extract the ZIP file to your preferred location</li>
-          <li>Run <span class="ktag">OverloadEngine.exe</span> to launch</li>
-        </ol>
+        <ol><li>Download the latest release from the Downloads page</li><li>Extract the ZIP file to your preferred location</li><li>Run <span class="ktag">OverloadEngine.exe</span> to launch</li></ol>
         <h3>Your First Mod</h3>
         <p>Create a new folder in the <span class="ktag">mods/</span> directory. Each mod needs:</p>
-        <ul>
-          <li><span class="btag">mod.json</span> — Mod metadata</li>
-          <li><span class="btag">scripts/</span> — HScript files</li>
-          <li><span class="btag">assets/</span> — Images, sounds, charts</li>
-        </ul>
+        <ul><li><span class="btag">mod.json</span> — Mod metadata</li><li><span class="btag">scripts/</span> — HScript files</li><li><span class="btag">assets/</span> — Images, sounds, charts</li></ul>
         <h3>Project Structure</h3>
-        <div class="cblock">mods/your-mod/
+        <div class="cblock"><span class="cm">mods/your-mod/</span>
   mod.json
   scripts/
     main.hsc
@@ -645,256 +373,116 @@
       </div>
       <div id="ws-ds" style="display:none">
         <h2>Deep State Injection</h2>
-        <p>Deep State Injection allows you to load any game state (Main Menu, Story Mode, Freeplay) inside an editor overlay for live tweaking.</p>
-        <h3>How It Works</h3>
-        <p>The engine captures the current state and renders it within the editor context, allowing real-time modifications.</p>
-        <h3>Usage</h3>
-        <p>Open the editor with <span class="ktag">F12</span>, then use the State dropdown to inject any game state into the current view.</p>
+        <p>Deep State Injection allows you to load any game state (Main Menu, Story Mode, Freeplay) inside an editor overlay for live tweaking.</p><hr>
+        <h3>How It Works</h3><p>The engine captures the current state and renders it within the editor context, allowing real-time modifications.</p>
+        <h3>Usage</h3><p>Open the editor with <span class="ktag">F12</span>, then use the State dropdown to inject any game state into the current view.</p>
         <h3>API</h3>
-        <div class="cblock">Overload.injectState('FreeplayState');
-Overload.injectState('StoryMenuState');</div>
+        <div class="cblock"><span class="ck">Overload</span>.injectState(<span class="cs">'FreeplayState'</span>);
+<span class="ck">Overload</span>.injectState(<span class="cs">'StoryMenuState'</span>);</div>
       </div>
       <div id="ws-ui" style="display:none">
         <h2>Ultimate UI Builder</h2>
-        <p>The drag-and-drop interface lets you create complex UIs without writing code.</p>
+        <p>The drag-and-drop interface lets you create complex UIs without writing code.</p><hr>
         <h3>Features</h3>
-        <ul>
-          <li>Visual layout editor</li>
-          <li>Live HScript code preview</li>
-          <li>Asset spawning from the browser</li>
-          <li>Snap-to-grid alignment</li>
-          <li>Layer management</li>
-        </ul>
+        <ul><li>Visual layout editor</li><li>Live HScript code preview</li><li>Asset spawning from the browser</li><li>Snap-to-grid alignment</li><li>Layer management</li></ul>
         <h3>Quick Start</h3>
-        <ol start="6">
-          <li>Press <span class="ktag">Tab</span> to open the UI Builder</li>
-          <li>Drag elements from the toolbox</li>
-          <li>Configure properties in the inspector</li>
-          <li>Click 'Export HScript' to generate code</li>
-        </ol>
+        <ol><li>Press <span class="ktag">Tab</span> to open the UI Builder</li><li>Drag elements from the toolbox</li><li>Configure properties in the inspector</li><li>Click 'Export HScript' to generate code</li></ol>
       </div>
       <div id="ws-hs" style="display:none">
         <h2>HScript API Reference</h2>
-        <p>Overload Engine extends the base HScript with powerful APIs.</p>
+        <p>Overload Engine extends the base HScript with powerful APIs.</p><hr>
         <h3>Core Functions</h3>
-        <div class="cblock">// Spawn a sprite
-var spr = Overload.createSprite(x, y, 'path/to/image');
-// Add tween
-Overload.tween(spr, {x: 500, alpha: 0.5}, 1.0, 'easeOutQuad');
+        <div class="cblock"><span class="cm">// Spawn a sprite</span>
+<span class="ck">var</span> spr = Overload.createSprite(x, y, <span class="cs">'path/to/image'</span>);
+<span class="cm">// Add tween</span>
+Overload.tween(spr, {x: 500, alpha: 0.5}, 1.0, <span class="cs">'easeOutQuad'</span>);
 
-// Play sound
-Overload.playSound('path/to/sound');
+<span class="cm">// Play sound</span>
+Overload.playSound(<span class="cs">'path/to/sound'</span>);
 
-// Register callback
-Overload.onBeat(function() {
-    // runs every beat
+<span class="cm">// Register callback</span>
+Overload.onBeat(<span class="ck">function</span>() {
+    <span class="cm">// runs every beat</span>
 });</div>
         <h3>Editor API</h3>
-        <div class="cblock">Overload.editor.addPanel('My Panel', myCallback);
-Overload.editor.registerTool('brush', brushCallback);</div>
+        <div class="cblock">Overload.editor.addPanel(<span class="cs">'My Panel'</span>, myCallback);
+Overload.editor.registerTool(<span class="cs">'brush'</span>, brushCallback);</div>
       </div>
       <div id="ws-sg" style="display:none">
         <h2>Scripting Guide</h2>
-        <p>Learn how to write scripts for Overload Engine.</p>
+        <p>Learn how to write scripts for Overload Engine.</p><hr>
         <h3>Live Script Console</h3>
         <p>Press <span class="ktag">`</span> to open the Live Script Console. Write HScript and click 'Apply' to see changes without restarting.</p>
         <h3>Script Lifecycle</h3>
-        <div class="cblock">function onCreate() {
-    // Called when the script loads
+        <div class="cblock"><span class="ck">function</span> onCreate() {
+    <span class="cm">// Called when the script loads</span>
 }
-
-function onUpdate(elapsed) {
-    // Called every frame
+<span class="ck">function</span> onUpdate(elapsed) {
+    <span class="cm">// Called every frame</span>
 }
-
-function onDestroy() {
-    // Called when the script unloads
+<span class="ck">function</span> onDestroy() {
+    <span class="cm">// Called when the script unloads</span>
 }</div>
         <h3>Error Handling</h3>
         <p>Overload Engine provides smart error messages. If a script fails, you'll see a crash substate explaining exactly what went wrong.</p>
       </div>
     </div>
   </div>
-  <footer style="margin-top:2rem;"><div class="foot-in">
-    <div class="foot-grid">
-      <div><div class="foot-logo" onclick="go('home')"><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features. Combination of all Popular FNF Engines.</div></div>
-      <div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div>
-      <div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a><a href="#"><svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.056a19.893 19.893 0 0 0 5.993 3.03.077.077 0 0 0 .084-.026c.462-.63.874-1.295 1.226-1.994.076-.13.029-.295-.105-.345a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg></a></div></div>
-    </div>
-    <div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div>
-  </div></footer>
+  <footer><div class="foot-in"><div class="foot-grid"><div><div class="foot-logo" onclick="go('home')"><div class="dot"></div><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features.</div></div><div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div><div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a></div></div></div><div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div></div></footer>
 </div>
 
-<!-- ══ CHANGELOG ══ -->
+<!-- CHANGELOG -->
 <div id="pg-cl" class="page">
-  <div class="pg-head"><div class="pg-title">CHANGELOG</div><div class="pg-desc">Track every update, fix, and feature added to Overload Engine.</div></div>
-  <div class="wrap" style="padding-top:0;">
+  <div class="pg-head"><div class="pg-title">Changelog</div><div class="pg-desc">Track every update, fix, and feature added to Overload Engine.</div></div>
+  <div class="wrap" style="padding-top:1.5rem">
     <div class="cl-list">
-      <div class="cl-card">
-        <div class="cl-vrow"><span>🔀</span><span class="cl-v">v1.2.0</span><span class="cl-d">2025-12-01</span></div>
-        <div class="cl-items">
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Deep State Injection for live editor overlays</div>
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Animation &amp; Tween Laboratory panel</div>
-          <div class="cl-item"><span class="tag t-f">FIXED</span> Camera synchronization black screen issue</div>
-          <div class="cl-item"><span class="tag t-i">IMPROVED</span> Smart Error Handling with custom crash substates</div>
-        </div>
-      </div>
-      <div class="cl-card">
-        <div class="cl-vrow"><span>🔀</span><span class="cl-v">v1.1.0</span><span class="cl-d">2025-11-15</span></div>
-        <div class="cl-items">
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Ultimate UI Builder with drag-and-drop</div>
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Asset Browser &amp; Manager for in-game file exploration</div>
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Live Script Console with Apply button</div>
-          <div class="cl-item"><span class="tag t-f">FIXED</span> Right-click mouse input handling</div>
-        </div>
-      </div>
-      <div class="cl-card">
-        <div class="cl-vrow"><span>🔀</span><span class="cl-v">v1.0.0</span><span class="cl-d">2025-10-20</span></div>
-        <div class="cl-items">
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Initial release of Overload Engine</div>
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Automated Backup System with .hsc files</div>
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Unified UI Framework with Saira-Bold.ttf</div>
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Multimodal Input: Mouse, Keyboard (WASD), Touch</div>
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Menu Cloning &amp; Templating system</div>
-          <div class="cl-item"><span class="tag t-a">ADDED</span> Global Object Scanner for sprite editing</div>
-        </div>
-      </div>
+      <div class="cl-card"><div class="cl-vrow"><span class="cl-icon">🔀</span><span class="cl-v">v1.2.0</span><span class="cl-d">2025-12-01</span></div><div class="cl-items"><div class="cl-item"><span class="tag t-a">Added</span>Deep State Injection for live editor overlays</div><div class="cl-item"><span class="tag t-a">Added</span>Animation &amp; Tween Laboratory panel</div><div class="cl-item"><span class="tag t-f">Fixed</span>Camera synchronization black screen issue</div><div class="cl-item"><span class="tag t-i">Improved</span>Smart Error Handling with custom crash substates</div></div></div>
+      <div class="cl-card"><div class="cl-vrow"><span class="cl-icon">🔀</span><span class="cl-v">v1.1.0</span><span class="cl-d">2025-11-15</span></div><div class="cl-items"><div class="cl-item"><span class="tag t-a">Added</span>Ultimate UI Builder with drag-and-drop</div><div class="cl-item"><span class="tag t-a">Added</span>Asset Browser &amp; Manager for in-game file exploration</div><div class="cl-item"><span class="tag t-a">Added</span>Live Script Console with Apply button</div><div class="cl-item"><span class="tag t-f">Fixed</span>Right-click mouse input handling</div></div></div>
+      <div class="cl-card"><div class="cl-vrow"><span class="cl-icon">🔀</span><span class="cl-v">v1.0.0</span><span class="cl-d">2025-10-20</span></div><div class="cl-items"><div class="cl-item"><span class="tag t-a">Added</span>Initial release of Overload Engine</div><div class="cl-item"><span class="tag t-a">Added</span>Automated Backup System with .hsc files</div><div class="cl-item"><span class="tag t-a">Added</span>Unified UI Framework with Saira-Bold.ttf</div><div class="cl-item"><span class="tag t-a">Added</span>Multimodal Input: Mouse, Keyboard (WASD), Touch</div><div class="cl-item"><span class="tag t-a">Added</span>Menu Cloning &amp; Templating system</div><div class="cl-item"><span class="tag t-a">Added</span>Global Object Scanner for sprite editing</div></div></div>
     </div>
   </div>
-  <footer style="margin-top:2rem;"><div class="foot-in">
-    <div class="foot-grid">
-      <div><div class="foot-logo" onclick="go('home')"><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features. Combination of all Popular FNF Engines.</div></div>
-      <div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div>
-      <div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a></div></div>
-    </div>
-    <div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div>
-  </div></footer>
+  <footer style="margin-top:3rem"><div class="foot-in"><div class="foot-grid"><div><div class="foot-logo" onclick="go('home')"><div class="dot"></div><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features.</div></div><div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div><div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a></div></div></div><div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div></div></footer>
 </div>
 
-<!-- ══ TEAM ══ -->
+<!-- TEAM -->
 <div id="pg-team" class="page">
-  <div class="pg-head"><div class="pg-title">TEAM<span class="sl">/</span>CREDITS</div><div class="pg-desc">The people behind Overload Engine.</div></div>
-  <div class="wrap" style="padding-top:0;">
+  <div class="pg-head"><div class="pg-title">Team<span class="sl"> / </span>Credits</div><div class="pg-desc">The people behind Overload Engine.</div></div>
+  <div class="wrap" style="padding-top:1.5rem">
     <div class="team-grid">
-      <div class="team-card">
-        <img class="team-av" src="https://picsum.photos/seed/ov1/78/78" alt="OverloadDev">
-        <div class="team-name">OverloadDev</div>
-        <div class="team-role">Lead Developer</div>
-        <div class="team-bio">Creator of Overload Engine. Passionate about making FNF modding accessible.</div>
-      </div>
-      <div class="team-card">
-        <img class="team-av" src="https://picsum.photos/seed/ov2/78/78" alt="ChartMaster">
-        <div class="team-name">ChartMaster</div>
-        <div class="team-role">Chart Editor Dev</div>
-        <div class="team-bio">Builds the integrated chart editor and UI framework.</div>
-      </div>
-      <div class="team-card">
-        <img class="team-av" src="https://picsum.photos/seed/ov3/78/78" alt="ScriptWizard">
-        <div class="team-name">ScriptWizard</div>
-        <div class="team-role">HScript Engineer</div>
-        <div class="team-bio">HScript integration, live console, and scripting API.</div>
-      </div>
-      <div class="team-card">
-        <img class="team-av" src="https://picsum.photos/seed/ov4/78/78" alt="PixelArtist">
-        <div class="team-name">PixelArtist</div>
-        <div class="team-role">UI/UX Designer</div>
-        <div class="team-bio">Designs the unified UI framework with Saira-Bold assets.</div>
-      </div>
+      <div class="team-card"><img class="team-av" src="https://picsum.photos/seed/ov1/76/76" alt="OverloadDev"><div class="team-name">OverloadDev</div><div class="team-role">Lead Developer</div><div class="team-bio">Creator of Overload Engine. Passionate about making FNF modding accessible.</div></div>
+      <div class="team-card"><img class="team-av" src="https://picsum.photos/seed/ov2/76/76" alt="ChartMaster"><div class="team-name">ChartMaster</div><div class="team-role">Chart Editor Dev</div><div class="team-bio">Builds the integrated chart editor and UI framework.</div></div>
+      <div class="team-card"><img class="team-av" src="https://picsum.photos/seed/ov3/76/76" alt="ScriptWizard"><div class="team-name">ScriptWizard</div><div class="team-role">HScript Engineer</div><div class="team-bio">HScript integration, live console, and scripting API.</div></div>
+      <div class="team-card"><img class="team-av" src="https://picsum.photos/seed/ov4/76/76" alt="PixelArtist"><div class="team-name">PixelArtist</div><div class="team-role">UI/UX Designer</div><div class="team-bio">Designs the unified UI framework with Saira-Bold assets.</div></div>
     </div>
   </div>
-  <footer style="margin-top:3rem;"><div class="foot-in">
-    <div class="foot-grid">
-      <div><div class="foot-logo" onclick="go('home')"><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features. Combination of all Popular FNF Engines.</div></div>
-      <div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div>
-      <div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a><a href="#"><svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.056a19.893 19.893 0 0 0 5.993 3.03.077.077 0 0 0 .084-.026c.462-.63.874-1.295 1.226-1.994.076-.13.029-.295-.105-.345a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg></a></div></div>
-    </div>
-    <div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div>
-  </div></footer>
+  <footer style="margin-top:4rem"><div class="foot-in"><div class="foot-grid"><div><div class="foot-logo" onclick="go('home')"><div class="dot"></div><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features.</div></div><div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div><div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a></div></div></div><div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div></div></footer>
 </div>
 
-<!-- ══ GALLERY ══ -->
+<!-- GALLERY -->
 <div id="pg-gal" class="page">
-  <div class="pg-head"><div class="pg-title">SCREENSHOTS<span class="sl">/</span>GALLERY</div><div class="pg-desc">See Overload Engine in action.</div></div>
-  <div class="wrap" style="padding-top:0;">
+  <div class="pg-head"><div class="pg-title">Screenshots<span class="sl"> / </span>Gallery</div><div class="pg-desc">See Overload Engine in action.</div></div>
+  <div class="wrap" style="padding-top:1.5rem">
     <div class="gal-grid">
-      <!-- Col 1 row 1 -->
-      <div class="gal-item">
-        <div style="background:linear-gradient(135deg,#0d0500 0%,#1f0e00 40%,#0d0500);min-height:190px;position:relative;overflow:hidden;">
-          <pre style="position:absolute;top:0.8rem;left:0.8rem;font-size:0.6rem;color:#e06020;line-height:1.8;margin:0;">function onCreate() {
+      <div class="gal-item"><div style="background:linear-gradient(135deg,#0d0500 0%,#1f0e00 40%,#0d0500);min-height:190px;display:flex;align-items:center;justify-content:center;overflow:hidden"><pre style="font-size:.58rem;color:#e06020;line-height:1.9;margin:0;padding:1rem">function onCreate() {
   sprites = [];
   load("editor");
 }
 // Overload Engine
-// Editor Suite</pre>
-        </div>
-        <div class="gal-cap"><div class="gal-ct">Editor Overview</div><div class="gal-cs">The integrated editor suite in action</div></div>
-      </div>
-      <!-- Col 2 tall -->
-      <div class="gal-item tall">
-        <div style="background:repeating-conic-gradient(#d050b8 0% 25%,#b040a0 0% 50%) 0 0/52px 52px;height:100%;min-height:412px;"></div>
-        <div class="gal-cap"><div class="gal-ct">Chart Editor</div><div class="gal-cs">Custom chart editor with live preview</div></div>
-      </div>
-      <!-- Col 3 row 1 -->
-      <div class="gal-item">
-        <div style="background:repeating-conic-gradient(#9090cc 0% 25%,#a8a8e0 0% 50%) 0 0/52px 52px;min-height:190px;"></div>
-        <div class="gal-cap"><div class="gal-ct">Script Console</div><div class="gal-cs">Live HScript console for real-time coding</div></div>
-      </div>
-      <!-- Col 1 row 2 -->
-      <div class="gal-item">
-        <div style="background:linear-gradient(135deg,#001800 0%,#003300 50%,#001800);min-height:190px;position:relative;overflow:hidden;">
-          <div style="position:absolute;inset:0;background:repeating-conic-gradient(rgba(60,160,60,0.5) 0% 25%,rgba(40,120,40,0.5) 0% 50%) 0 0/30px 30px;"></div>
-        </div>
-        <div class="gal-cap"><div class="gal-ct">UI Builder</div><div class="gal-cs">Drag-and-drop UI builder interface</div></div>
-      </div>
-      <!-- Col 3 row 2 -->
-      <div class="gal-item">
-        <div style="background:repeating-conic-gradient(#55aac8 0% 25%,#66bbdd 0% 50%) 0 0/52px 52px;min-height:190px;"></div>
-        <div class="gal-cap"><div class="gal-ct">Asset Browser</div><div class="gal-cs">In-game asset browser and manager</div></div>
-      </div>
+// Editor Suite v1.2</pre></div><div class="gal-cap"><div class="gal-ct">Editor Overview</div><div class="gal-cs">The integrated editor suite in action</div></div></div>
+      <div class="gal-item tall"><div style="background:repeating-conic-gradient(#d050b8 0% 25%,#b040a0 0% 50%) 0 0/52px 52px;min-height:400px"></div><div class="gal-cap"><div class="gal-ct">Chart Editor</div><div class="gal-cs">Custom chart editor with live preview</div></div></div>
+      <div class="gal-item"><div style="background:repeating-conic-gradient(#9090cc 0% 25%,#a8a8e0 0% 50%) 0 0/52px 52px;min-height:190px"></div><div class="gal-cap"><div class="gal-ct">Script Console</div><div class="gal-cs">Live HScript console for real-time coding</div></div></div>
+      <div class="gal-item"><div style="background:linear-gradient(135deg,#001800,#003300);min-height:190px;position:relative;overflow:hidden"><div style="position:absolute;inset:0;background:repeating-conic-gradient(rgba(60,160,60,.5) 0% 25%,rgba(40,120,40,.5) 0% 50%) 0 0/30px 30px"></div></div><div class="gal-cap"><div class="gal-ct">UI Builder</div><div class="gal-cs">Drag-and-drop UI builder interface</div></div></div>
+      <div class="gal-item"><div style="background:repeating-conic-gradient(#55aac8 0% 25%,#66bbdd 0% 50%) 0 0/52px 52px;min-height:190px"></div><div class="gal-cap"><div class="gal-ct">Asset Browser</div><div class="gal-cs">In-game asset browser and manager</div></div></div>
     </div>
   </div>
-  <footer style="margin-top:2rem;"><div class="foot-in">
-    <div class="foot-grid">
-      <div><div class="foot-logo" onclick="go('home')"><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features. Combination of all Popular FNF Engines.</div></div>
-      <div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div>
-      <div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a></div></div>
-    </div>
-    <div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div>
-  </div></footer>
+  <footer style="margin-top:2rem"><div class="foot-in"><div class="foot-grid"><div><div class="foot-logo" onclick="go('home')"><div class="dot"></div><span class="w">OVERLOAD</span><span class="c">ENGINE</span></div><div class="foot-desc">Making Modding easier with new features.</div></div><div><div class="foot-col-h">Links</div><ul class="foot-links"><li><a onclick="go('dl')">Downloads</a></li><li><a onclick="go('wiki')">Wiki</a></li><li><a onclick="go('cl')">Changelog</a></li><li><a onclick="go('team')">Team</a></li><li><a onclick="go('gal')">Gallery</a></li></ul></div><div><div class="foot-col-h">Community</div><div class="foot-social"><a href="#"><svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a></div></div></div><div class="foot-bottom">Overload Engine © 2026. Not affiliated with Funkin' Crew.</div></div></footer>
 </div>
 
 <script>
-  const PAGES = ['home','dl','wiki','cl','team','gal'];
-
-  function go(id) {
-    PAGES.forEach(p => document.getElementById('pg-'+p).classList.remove('active'));
-    document.getElementById('pg-'+id).classList.add('active');
-    document.querySelectorAll('.nav-links a').forEach(a => a.classList.toggle('act', a.dataset.pg===id));
-    window.scrollTo(0,0);
-    history.pushState(null,'','#'+id);
-  }
-
-  function wikiGo(sec, btn) {
-    ['gs','ds','ui','hs','sg'].forEach(s => { const el = document.getElementById('ws-'+s); if(el) el.style.display='none'; });
-    document.getElementById('ws-'+sec).style.display='block';
-    document.querySelectorAll('.wiki-sb-item').forEach(b => b.classList.remove('act'));
-    btn.classList.add('act');
-  }
-
-  // Hash routing
-  (function() {
-    const h = (location.hash||'#home').replace('#','');
-    if (PAGES.includes(h)) go(h);
-    window.addEventListener('hashchange', () => {
-      const p = location.hash.replace('#','');
-      if (PAGES.includes(p)) {
-        PAGES.forEach(pg => document.getElementById('pg-'+pg).classList.remove('active'));
-        document.getElementById('pg-'+p).classList.add('active');
-        document.querySelectorAll('.nav-links a').forEach(a => a.classList.toggle('act', a.dataset.pg===p));
-        window.scrollTo(0,0);
-      }
-    });
-  })();
+  const PAGES=['home','dl','wiki','cl','team','gal'];
+  function go(id){PAGES.forEach(p=>document.getElementById('pg-'+p).classList.remove('active'));document.getElementById('pg-'+id).classList.add('active');document.querySelectorAll('.nav-links a').forEach(a=>a.classList.toggle('act',a.dataset.pg===id));window.scrollTo({top:0,behavior:'instant'});history.pushState(null,'','#'+id)}
+  function wikiGo(sec,btn){['gs','ds','ui','hs','sg'].forEach(s=>{const el=document.getElementById('ws-'+s);if(el)el.style.display='none'});document.getElementById('ws-'+sec).style.display='block';document.querySelectorAll('.wiki-sb-item').forEach(b=>b.classList.remove('act'));btn.classList.add('act')}
+  (function(){const h=(location.hash||'#home').replace('#','');if(PAGES.includes(h))go(h);window.addEventListener('hashchange',()=>{const p=location.hash.replace('#','');if(PAGES.includes(p))go(p)})})();
 </script>
 </body>
 </html>
